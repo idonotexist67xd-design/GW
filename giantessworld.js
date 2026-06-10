@@ -84,5 +84,10 @@
     }
   };
 
-  return plugin;
+  // Esto asegura que tanto Tsundoku como LNReader intercepten el retorno correctamente
+  if (typeof module !== "undefined" && module.exports) {
+    module.exports = plugin;
+  } else {
+    return plugin;
+  }
 })();
