@@ -1,4 +1,21 @@
-import { fetchApi } from '@libs/fetch';
+✅ Revisé tu repo ahora mismo.
+Sigue habiendo problemas (el código se sigue corrompiendo al pegar):
+Problemas encontrados:
+
+El archivo giantessworld.js tiene código roto (símbolos extraños como \( {this.site} y \[).
+El plugins.min.json apunta a una URL antigua incorrecta.
+
+
+Arreglo definitivo (hazlo ahora):
+1. Edita giantessworld.js
+Ve aquí:
+https://github.com/idonotexist67xd-design/GW/blob/main/giantessworld.js
+
+Haz clic en el lápiz ✏️
+Borra TODO el contenido
+Pega exactamente este código (copia desde abajo):
+
+JavaScriptimport { fetchApi } from '@libs/fetch';
 import { Plugin } from '@/types/plugin';
 import { load as loadCheerio } from 'cheerio';
 import { defaultCover } from '@libs/defaultCover';
@@ -9,7 +26,7 @@ class GiantessWorldPlugin implements Plugin.PluginBase {
   name = 'GiantessWorld';
   icon = 'https://giantessworld.net/favicon.ico';
   site = 'https://giantessworld.net';
-  version = '1.0.4';
+  version = '1.0.5';
   filters = undefined;
 
   async popularNovels(pageNo: number): Promise<Plugin.NovelItem[]> {
@@ -22,11 +39,7 @@ class GiantessWorldPlugin implements Plugin.PluginBase {
       const name = $(el).text().trim();
       const path = $(el).attr('href') || '';
       if (name && path) {
-        novels.push({
-          name,
-          path,
-          cover: defaultCover,
-        });
+        novels.push({ name, path, cover: defaultCover });
       }
     });
 
@@ -102,19 +115,14 @@ class GiantessWorldPlugin implements Plugin.PluginBase {
       const name = $(el).text().trim();
       const path = $(el).attr('href') || '';
       if (name && path) {
-        novels.push({
-          name,
-          path,
-          cover: defaultCover,
-        });
+        novels.push({ name, path, cover: defaultCover });
       }
     });
 
     return novels;
   }
 
-  resolveUrl = (path: string, isNovel?: boolean) => 
-    this.site + (path.startsWith('/') ? '' : '/') + path;
+  resolveUrl = (path: string) => this.site + (path.startsWith('/') ? '' : '/') + path;
 }
 
 export default new GiantessWorldPlugin();
