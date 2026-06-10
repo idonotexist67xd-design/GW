@@ -9,7 +9,7 @@ class GiantessWorldPlugin implements Plugin.PluginBase {
   name = 'GiantessWorld';
   icon = 'https://giantessworld.net/favicon.ico';
   site = 'https://giantessworld.net';
-  version = '1.0.1';
+  version = '1.0.2';
   filters = undefined;
 
   async popularNovels(pageNo: number): Promise<Plugin.NovelItem[]> {
@@ -34,7 +34,7 @@ class GiantessWorldPlugin implements Plugin.PluginBase {
   }
 
   async parseNovel(novelPath: string): Promise<Plugin.SourceNovel> {
-    const url = this.site + '/' + novelPath;
+    const url = this.site + (novelPath.startsWith('/') ? '' : '/') + novelPath;
     const body = await fetchApi(url).then(res => res.text());
     const $ = loadCheerio(body);
 
@@ -49,14 +49,15 @@ class GiantessWorldPlugin implements Plugin.PluginBase {
     };
 
     // Autor
-    novel.author = $('a[href^="viewuser.php"]').first().text().trim();
+    novel.author = $('a[href^="viewuser.php"]').first().text().trim() || 'Desconocido';
 
     // Resumen
     novel.summary = $('.summary, p:contains("Summary")').text().trim() || 
-                   $('td:contains("Summary")').next().text().trim();
+                   $('td:contains("Summary")').next().text().trim() || 
+                   $('td:contains("Description")').next().text().trim();
 
-    // Lista de capítulos (en la página con &index=1)
-    const tocUrl = url.includes('index=1') ? url : url + '&index=1';
+    // Lista de capítulos
+    const tocUrl = url.includes('index=1') ? url : url.replace(/&?index=\d*/, '') + '&index=1';
     const tocBody = await fetchApi(tocUrl).then(res => res.text());
     const $$ = loadCheerio(tocBody);
 
@@ -77,23 +78,25 @@ class GiantessWorldPlugin implements Plugin.PluginBase {
   }
 
   async parseChapter(chapterPath: string): Promise<string> {
-    const url = this.site + '/' + chapterPath;
+    const url = this.site + (chapterPath.startsWith('/') ? '' : '/') + chapterPath;
     const body = await fetchApi(url).then(res => res.text());
     const $ = loadCheerio(body);
 
-    // El contenido principal suele estar en un div grande o td
     let text = $('td[align="left"]').html() || 
-               $('.chapter-content, .storytext').html() || 
+               $('.chapter-content, .storytext, #storytext').html() || 
                $('body').html() || '';
 
-    // Limpieza básica
+    // Limpieza
     text = text
       .replace(/<script.*?<\/script>/gis, '')
       .replace(/<style.*?<\/style>/gis, '')
-      .replace(/<a[^>]*>/gi, '')
-      .replace(/<\/a>/gi, '');
+      .replace(/<a[^>]*>(.*?)<\/a>/gi, '$1')
+      .replace(/<[^>]+>/g, match => {
+        if (match.includes('br') || match.includes('p') || match.includes('div')) return '\n';
+        return ' ';
+      });
 
-    return text || 'No se pudo cargar el capítulo.';
+    return text.trim() || 'No se pudo cargar el capítulo.';
   }
 
   async searchNovels(searchTerm: string): Promise<Plugin.NovelItem[]> {
