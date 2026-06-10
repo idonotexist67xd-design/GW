@@ -9,7 +9,7 @@ class GiantessWorldPlugin implements Plugin.PluginBase {
   name = 'GiantessWorld';
   icon = 'https://giantessworld.net/favicon.ico';
   site = 'https://giantessworld.net';
-  version = '1.0.2';
+  version = '1.0.3';
   filters = undefined;
 
   async popularNovels(pageNo: number): Promise<Plugin.NovelItem[]> {
@@ -48,16 +48,13 @@ class GiantessWorldPlugin implements Plugin.PluginBase {
       chapters: [],
     };
 
-    // Autor
     novel.author = $('a[href^="viewuser.php"]').first().text().trim() || 'Desconocido';
 
-    // Resumen
     novel.summary = $('.summary, p:contains("Summary")').text().trim() || 
                    $('td:contains("Summary")').next().text().trim() || 
                    $('td:contains("Description")').next().text().trim();
 
-    // Lista de capítulos
-    const tocUrl = url.includes('index=1') ? url : url.replace(/&?index=\d*/, '') + '&index=1';
+    const tocUrl = url.includes('index=1') ? url : url + '&index=1';
     const tocBody = await fetchApi(tocUrl).then(res => res.text());
     const $$ = loadCheerio(tocBody);
 
@@ -86,15 +83,11 @@ class GiantessWorldPlugin implements Plugin.PluginBase {
                $('.chapter-content, .storytext, #storytext').html() || 
                $('body').html() || '';
 
-    // Limpieza
     text = text
       .replace(/<script.*?<\/script>/gis, '')
       .replace(/<style.*?<\/style>/gis, '')
       .replace(/<a[^>]*>(.*?)<\/a>/gi, '$1')
-      .replace(/<[^>]+>/g, match => {
-        if (match.includes('br') || match.includes('p') || match.includes('div')) return '\n';
-        return ' ';
-      });
+      .replace(/<[^>]+>/g, match => (match.includes('br') || match.includes('p') || match.includes('div') ? '\n' : ' '));
 
     return text.trim() || 'No se pudo cargar el capítulo.';
   }
