@@ -9,11 +9,11 @@ class GiantessWorldPlugin implements Plugin.PluginBase {
   name = 'GiantessWorld';
   icon = 'https://giantessworld.net/favicon.ico';
   site = 'https://giantessworld.net';
-  version = '1.0.3';
+  version = '1.0.4';
   filters = undefined;
 
   async popularNovels(pageNo: number): Promise<Plugin.NovelItem[]> {
-    const url = `\( {this.site}/browse.php?type=recent&page= \){pageNo}`;
+    const url = `${this.site}/browse.php?type=recent&page=${pageNo}`;
     const body = await fetchApi(url).then(res => res.text());
     const $ = loadCheerio(body);
     const novels: Plugin.NovelItem[] = [];
@@ -58,8 +58,8 @@ class GiantessWorldPlugin implements Plugin.PluginBase {
     const tocBody = await fetchApi(tocUrl).then(res => res.text());
     const $$ = loadCheerio(tocBody);
 
-    \[ ('a[href^="viewchapter.php"]').each((i, el) => {
-      const chapterName = \](el).text().trim();
+    $$('a[href^="viewchapter.php"]').each((i, el) => {
+      const chapterName = $$(el).text().trim();
       const chapterPath = $$(el).attr('href') || '';
       if (chapterName && chapterPath) {
         novel.chapters.push({
@@ -93,7 +93,7 @@ class GiantessWorldPlugin implements Plugin.PluginBase {
   }
 
   async searchNovels(searchTerm: string): Promise<Plugin.NovelItem[]> {
-    const url = `\( {this.site}/search.php?search= \){encodeURIComponent(searchTerm)}`;
+    const url = `${this.site}/search.php?search=${encodeURIComponent(searchTerm)}`;
     const body = await fetchApi(url).then(res => res.text());
     const $ = loadCheerio(body);
     const novels: Plugin.NovelItem[] = [];
