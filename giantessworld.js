@@ -6,7 +6,7 @@
     name: "GiantessWorld",
     icon: "https://giantessworld.net/favicon.ico",
     site: "https://giantessworld.net",
-    version: "1.0.6",
+    version: "1.0.7",
 
     async popularNovels(page) {
       const url = `https://giantessworld.net/browse.php?type=recent&page=${page}`;
@@ -17,16 +17,16 @@
       $('a[href^="viewstory.php?sid="]').each((_, el) => {
         const name = $(el).text().trim();
         const path = $(el).attr("href");
-        if (name && path) {
-          novels.push({ name, path, cover: "" });
-        }
+        if (name && path) novels.push({ name, path, cover: "" });
       });
       return novels;
     },
 
     async parseNovel(novelPath) {
-      let url = `https://giantessworld.net/${novelPath}`;
-      if (!url.includes("index=1")) url += (url.includes("?") ? "&" : "?") + "index=1";
+      let url = `https://giantessworld.net/${novelPath.replace(/^\//, '')}`;
+      if (!url.includes("index=1")) {
+        url += (url.includes("?") ? "&" : "?") + "index=1";
+      }
 
       let html = await (await fetch(url)).text();
       let $ = cheerio.load(html);
@@ -44,11 +44,7 @@
         const name = $(el).text().trim();
         const path = $(el).attr("href");
         if (name && path) {
-          novel.chapters.push({
-            name,
-            path,
-            chapterNumber: i + 1
-          });
+          novel.chapters.push({ name, path, chapterNumber: i + 1 });
         }
       });
 
@@ -56,7 +52,7 @@
     },
 
     async parseChapter(chapterPath) {
-      const url = `https://giantessworld.net/${chapterPath}`;
+      const url = `https://giantessworld.net/${chapterPath.replace(/^\//, '')}`;
       const html = await (await fetch(url)).text();
       const $ = cheerio.load(html);
 
